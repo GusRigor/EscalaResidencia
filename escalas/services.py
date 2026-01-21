@@ -1,6 +1,62 @@
 from django.utils import timezone
-from datetime import timedelta
+from django.db import transaction
+from django.core.exceptions import PermissionDenied, ValidationError
+
+from escalas.models import Escala, Turno
+from escalas.permissions import exigir_criacao, exigir_remocao
 from escalas.models import ReservationToken, TOKEN_TIMEOUT_MINUTES
+
+from datetime import timedelta
+
+@transaction.atomic
+def reservar_escala(*, usuario, data, turno_id):
+    """
+    Cria uma escala respeitando:
+    - permissões
+    - token de concorrência
+    - regras de sobreposição
+    """
+
+    # 1️⃣ Permissão por papel
+    exigir_criacao(usuario)
+
+    # 2️⃣ Token (admin ignora)
+    if not usuario.is_admin():
+        if not usuario_tem_prioridade(usuario):
+            raise PermissionDenied(
+                'Outro residente iniciou a reserva antes.'
+            )
+
+    # 3️⃣ Buscar turno
+    try:
+        turno = Turno.objects.select_for_update().get(id=turno_id)
+    except Turno.DoesNotExist:
+        raise ValidationError('Turno inválido.')
+
+    # 4️⃣ Criar escala (full_clean será chamado no save)
+    escala = Escala(
+        usuario=usuario,
+        data=data,
+        turno=turno
+    )
+    escala.save()
+
+    return escala
+
+@transaction.atomic
+def remover_escala(*, usuario, escala_id):
+    """
+    Remove uma escala respeitando permissões.
+    """
+
+    try:
+        escala = Escala.objects.select_for_update().get(id=escala_id)
+    except Escala.DoesNotExist:
+        raise ValidationError('Escala não encontrada.')
+
+    exigir_remocao(usuario, escala)
+
+    escala.delete()
 
 def obter_ou_criar_token(usuario):
     agora = timezone.now()
