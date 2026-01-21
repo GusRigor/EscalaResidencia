@@ -1,8 +1,12 @@
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from datetime import time, datetime, timedelta
+import uuid
 
+User = settings.AUTH_USER_MODEL
+TOKEN_TIMEOUT_MINUTES = 5
 
 class Turno(models.Model):
     class Codigo(models.TextChoices):
@@ -29,8 +33,6 @@ class Turno(models.Model):
 
     def __str__(self):
         return self.nome
-
-User = settings.AUTH_USER_MODEL
 
 class Escala(models.Model):
     usuario = models.ForeignKey(
@@ -111,3 +113,36 @@ class Escala(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
 
+class ReservationToken(models.Model):
+    usuario = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reservation_token'
+    )
+
+    token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False
+    )
+
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    ultimo_heartbeat = models.DateTimeField(auto_now=True)
+
+    valido_ate = models.DateTimeField()
+
+    class Meta:
+        ordering = ['criado_em']
+
+    def __str__(self):
+        return f'Token {self.token} ({self.usuario})'
+
+    def esta_valido(self):
+        return timezone.now() <= self.valido_ate
+
+    def renovar(self):
+        agora = timezone.now()
+        self.ultimo_heartbeat = agora
+        self.valido_ate = agora + timedelta(minutes=TOKEN_TIMEOUT_MINUTES)
+        self.save(update_fields=['ultimo_heartbeat', 'valido_ate'])
