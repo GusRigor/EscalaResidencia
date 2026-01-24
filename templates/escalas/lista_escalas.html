@@ -12,7 +12,12 @@
 >
     {% csrf_token %}
 
-    <input type="date" name="data" required>
+    <input
+    type="date"
+    name="data"
+    required
+    min="{{ today|date:'Y-m-d' }}"
+>
 
     <select name="turno_id" required>
         {% for turno in turnos %}

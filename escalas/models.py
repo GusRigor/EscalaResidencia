@@ -90,6 +90,11 @@ class Escala(models.Model):
         Valida:
         - máximo de 2 residentes simultâneos
         """
+        if self.data < timezone.localdate():
+            raise ValidationError(
+                {'data': 'Não é permitido criar escala em data passada.'}
+            )
+
         from escalas.models import Escala
 
         inicio, fim = self.intervalo_real()

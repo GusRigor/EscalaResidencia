@@ -16,6 +16,12 @@ def reservar_escala(*, usuario, data, turno_id):
     - token de concorrência
     - regras de sobreposição
     """
+    
+    # 0️⃣ Valida data
+    if data < timezone.localdate():
+        raise ValidationError(
+            'Não é possível reservar escalas em datas passadas.'
+        )
 
     # 1️⃣ Permissão por papel
     exigir_criacao(usuario)

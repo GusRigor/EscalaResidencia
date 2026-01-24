@@ -27,6 +27,7 @@ def lista_escalas(request):
         {
             'escalas': escalas,
             'turnos': turnos,
+            'today': timezone.localdate(),
         }
     )
 
