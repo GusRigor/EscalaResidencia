@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Escala Sala de Parto{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script>
+    document.body.addEventListener('htmx:responseError', function (evt) {
+        if (evt.detail.xhr.status === 409) {
+            alert('Seu tempo de reserva expirou. Recarregue a página.');
+        }
+    });
+    </script>
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont;
+            margin: 40px;
+            background: #f6f7f8;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: #fff;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        .msg-success { color: green; }
+        .msg-error { color: red; }
+
+        .btn {
+            padding: 6px 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-danger { background: #c0392b; color: white; }
+        .btn-primary { background: #2980b9; color: white; }
+    </style>
+</head>
+<body>
+
+<h1>📅 Escala — Sala de Parto</h1>
+
+<p>
+    Usuário: <strong>{{ request.user.username }}</strong>
+    ({{ request.user.role }})
+</p>
+
+{% if messages %}
+    {% for message in messages %}
+        <p class="msg-{{ message.tags }}">{{ message }}</p>
+    {% endfor %}
+{% endif %}
+
+<hr>
+
+{% block content %}{% endblock %}
+
+{% if request.user.is_authenticated and request.user.role != 'CONVIDADO' %}
+<div
+    hx-get="{% url 'heartbeat_token' %}"
+    hx-trigger="every 5m"
+    hx-swap="none">
+</div>
+{% endif %}
+
+</body>
+</html>

@@ -2,6 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from django.utils import timezone
+
+from escalas.models import ReservationToken
 
 from escalas.services import reservar_escala, remover_escala
 from escalas.models import Escala, Turno
@@ -30,43 +35,55 @@ def reservar(request):
     if request.method != 'POST':
         return redirect('lista_escalas')
 
-    data = request.POST.get('data')
-    turno_id = request.POST.get('turno_id')
-
     try:
         reservar_escala(
             usuario=request.user,
-            data=data,
-            turno_id=turno_id
+            data=request.POST['data'],
+            turno_id=request.POST['turno_id']
         )
-        messages.success(request, 'Escala reservada com sucesso.')
+    except Exception as e:
+        return HttpResponse(
+            f'<p class="msg-error">{e}</p>',
+            status=400
+        )
 
-    except PermissionDenied as e:
-        messages.error(request, str(e))
+    escalas = Escala.objects.select_related('usuario', 'turno')
 
-    except ValidationError as e:
-        messages.error(request, e.message)
+    html = render_to_string(
+        'escalas/_tabela_escalas.html',
+        {'escalas': escalas, 'request': request}
+    )
 
-    return redirect('lista_escalas')
+    return HttpResponse(html)
 
 @login_required
 def remover(request, escala_id):
     if request.method != 'POST':
         return redirect('lista_escalas')
 
+    remover_escala(
+        usuario=request.user,
+        escala_id=escala_id
+    )
+
+    escalas = Escala.objects.select_related('usuario', 'turno')
+
+    html = render_to_string(
+        'escalas/_tabela_escalas.html',
+        {'escalas': escalas, 'request': request}
+    )
+
+    return HttpResponse(html)
+
+@login_required
+def heartbeat_token(request):
     try:
-        remover_escala(
-            usuario=request.user,
-            escala_id=escala_id
-        )
-        messages.success(request, 'Escala removida.')
+        token = request.user.reservation_token
+    except ReservationToken.DoesNotExist:
+        return HttpResponse('SEM_TOKEN', status=200)
 
-    except PermissionDenied as e:
-        messages.error(request, str(e))
+    if not token.esta_valido():
+        return HttpResponse('EXPIRADO', status=409)
 
-    except ValidationError as e:
-        messages.error(request, e.message)
-
-    return redirect('lista_escalas')
-
-
+    token.renovar()
+    return HttpResponse('OK', status=200)

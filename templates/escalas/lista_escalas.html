@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Reservar escala</h2>
+
+{% if request.user.role != 'CONVIDADO' %}
+<form
+    hx-post="{% url 'reservar_escala' %}"
+    hx-target="#tabela-escalas"
+    hx-swap="outerHTML"
+>
+    {% csrf_token %}
+
+    <input type="date" name="data" required>
+
+    <select name="turno_id" required>
+        {% for turno in turnos %}
+            <option value="{{ turno.id }}">
+                {{ turno.nome }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button class="btn btn-primary">
+        Reservar
+    </button>
+</form>
+{% endif %}
+
+<hr>
+
+<h2>Escalas</h2>
+
+<div id="tabela-escalas">
+    {% include 'escalas/_tabela_escalas.html' %}
+</div>
+
+{% endblock %}
