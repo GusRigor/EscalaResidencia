@@ -1,3 +1,5 @@
+import calendar
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -7,7 +9,6 @@ from django.http import HttpResponse
 from django.utils import timezone
 
 from escalas.models import ReservationToken
-
 from escalas.services import reservar_escala, remover_escala
 from escalas.models import Escala, Turno
 
@@ -88,3 +89,32 @@ def heartbeat_token(request):
 
     token.renovar()
     return HttpResponse('OK', status=200)
+
+def calendario_mensal(request):
+    hoje = timezone.localdate()
+    ano = hoje.year
+    mes = hoje.month
+
+    cal = calendar.Calendar(firstweekday=0)
+    dias_mes = cal.monthdatescalendar(ano, mes)
+
+    escalas = (
+        Escala.objects
+        .select_related('usuario', 'turno')
+        .filter(data__month=mes, data__year=ano)
+    )
+
+    # Agrupa escalas por data
+    mapa = {}
+    for escala in escalas:
+        mapa.setdefault(escala.data, []).append(escala)
+
+    return render(
+        request,
+        'calendario.html',
+        {
+            'dias_mes': dias_mes,
+            'mapa': mapa,
+            'hoje': hoje,
+        }
+    )
