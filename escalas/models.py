@@ -96,7 +96,25 @@ class Escala(models.Model):
             )
 
         from escalas.models import Escala
+        
+        # 🔒 REGRA 1: mesmo usuário, mesmo dia, mesmo turno
+        existe = (
+            Escala.objects
+            .filter(
+                usuario=self.usuario,
+                data=self.data,
+                turno=self.turno
+            )
+            .exclude(pk=self.pk)
+            .exists()
+        )
 
+        if existe:
+            raise ValidationError(
+                'Você já possui uma escala neste turno neste dia.'
+            )
+
+        # 🔒 REGRA 2: máximo de 2 residentes simultâneos
         inicio, fim = self.intervalo_real()
 
         escalas_do_dia = Escala.objects.exclude(pk=self.pk)

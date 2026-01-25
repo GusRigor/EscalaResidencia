@@ -26,6 +26,17 @@ def reservar_escala(*, usuario, data, turno_id):
     # 1️⃣ Permissão por papel
     exigir_criacao(usuario)
     
+    # Verificar se esse residente já reservou esse turno nesse dia
+    if Escala.objects.filter(
+        usuario=usuario,
+        data=data,
+        turno_id=turno_id
+    ).exists():
+        raise ValidationError(
+            'Você já reservou este turno neste dia.'
+        )
+    
+    
     token = obter_ou_criar_token(usuario)
 
     # 2️⃣ Token (admin ignora)
