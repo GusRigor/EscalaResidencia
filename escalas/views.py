@@ -50,6 +50,7 @@ def reservar(request):
     try:
         data = datetime.strptime(data, '%Y-%m-%d').date()
     except ValueError:
+        print("DATA INVÁLIDA RECEBIDA:", data)
         return HttpResponse(
             '<p class="msg-error">Data inválida.</p>',
             status=400
@@ -62,11 +63,13 @@ def reservar(request):
             turno_id=turno_id
         )
     except ValidationError as e:
+        print("VALIDATION ERROR:", e)
         return HttpResponse(
             f'<p class="msg-error">{e.message}</p>',
             status=400
         )
     except Exception as e:
+        print("ERRO INESPERADO:", e)
         return HttpResponse(
             '<p class="msg-error">Erro inesperado.</p>',
             status=400
