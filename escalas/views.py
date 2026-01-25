@@ -20,6 +20,9 @@ def lista_escalas(request):
         .select_related('usuario', 'turno')
         .order_by('data', 'turno__hora_inicio')
     )
+    
+    if not request.user.is_admin():
+        escalas = escalas.filter(usuario=request.user)
 
     turnos = Turno.objects.all()
 

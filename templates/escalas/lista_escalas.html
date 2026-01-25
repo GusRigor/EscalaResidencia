@@ -3,6 +3,9 @@
 {% block content %}
 
 <h2>Reservar escala</h2>
+<p>
+    <a href="{% url 'home' %}">➡️ Voltar para calendário</a>
+</p>
 
 {% if request.user.role != 'CONVIDADO' %}
 <form
