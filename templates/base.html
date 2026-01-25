@@ -2,6 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}Escala Sala de Parto{% endblock %}</title>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <script>
@@ -9,6 +10,9 @@
         if (evt.detail.xhr.status === 409) {
             alert('Seu tempo de reserva expirou. Recarregue a página.');
         }
+    document.body.addEventListener('htmx:configRequest', function (event) {
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        event.detail.headers['X-CSRFToken'] = token
     });
     </script>
 

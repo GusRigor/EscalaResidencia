@@ -83,11 +83,6 @@ def obter_ou_criar_token(usuario):
 
 def usuario_tem_prioridade(usuario):
     token = getattr(usuario, 'reservation_token', None)
-    
-    print("Verificando prioridade para usuário:", usuario)
-    print("Token do usuário:", token)
-    print("Token válido até:", token.valido_ate if token else None)
-    print("Token está valido", token.esta_valido() if token else None)
 
     if not token or not token.esta_valido():
         return False
