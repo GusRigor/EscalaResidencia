@@ -55,6 +55,10 @@
 <p>
     Usuário: <strong>{{ request.user.username }}</strong>
     ({{ request.user.role }})
+    <form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button class="btn">Sair</button>
+</form>
 </p>
 
 {% if messages %}

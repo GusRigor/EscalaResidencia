@@ -1,4 +1,5 @@
 import calendar
+from datetime import datetime
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -35,17 +36,39 @@ def lista_escalas(request):
 @login_required
 def reservar(request):
     if request.method != 'POST':
-        return redirect('lista_escalas')
+        return HttpResponse(status=405)
+
+    data = request.POST.get('data')
+    turno_id = request.POST.get('turno_id')
+
+    if not data or not turno_id:
+        return HttpResponse(
+            '<p class="msg-error">Dados inválidos.</p>',
+            status=400
+        )
+
+    try:
+        data = datetime.strptime(data, '%Y-%m-%d').date()
+    except ValueError:
+        return HttpResponse(
+            '<p class="msg-error">Data inválida.</p>',
+            status=400
+        )
 
     try:
         reservar_escala(
             usuario=request.user,
-            data=request.POST['data'],
-            turno_id=request.POST['turno_id']
+            data=data,
+            turno_id=turno_id
+        )
+    except ValidationError as e:
+        return HttpResponse(
+            f'<p class="msg-error">{e.message}</p>',
+            status=400
         )
     except Exception as e:
         return HttpResponse(
-            f'<p class="msg-error">{e}</p>',
+            '<p class="msg-error">Erro inesperado.</p>',
             status=400
         )
 

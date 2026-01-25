@@ -8,7 +8,7 @@
 <form
     hx-post="{% url 'reservar_escala' %}"
     hx-target="#tabela-escalas"
-    hx-swap="outerHTML"
+    hx-swap="innerHTML"
 >
     {% csrf_token %}
 
