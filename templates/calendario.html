@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% load extras %}
+
+{% block title %}Calendário{% endblock %}
+
+{% block content %}
+
+<h2>📆 {{ hoje|date:"F Y" }}</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Seg</th>
+            <th>Ter</th>
+            <th>Qua</th>
+            <th>Qui</th>
+            <th>Sex</th>
+            <th>Sáb</th>
+            <th>Dom</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for semana in dias_mes %}
+        <tr>
+            {% for dia in semana %}
+            <td style="vertical-align: top; {% if dia == hoje %}background:#eef;{% endif %}">
+                <strong>{{ dia.day }}</strong>
+
+                {% for escala in mapa|get_item:dia %}
+                    <div style="font-size: 0.85em; margin-top:4px;">
+                        <b>{{ escala.turno.nome }}</b><br>
+                        {{ escala.usuario.username }}
+                    </div>
+                {% empty %}
+                    <div style="font-size: 0.8em; color:#999;">
+                        —
+                    </div>
+                {% endfor %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>
+    <a href="{% url 'lista_escalas' %}">➡️ Ir para reservas</a>
+</p>
+
+{% endblock %}
