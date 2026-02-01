@@ -1,20 +1,55 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Login | Escala{% endblock %}
 
-<h2>🔐 Acesso ao sistema</h2>
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
 
-<form method="post">
-    {% csrf_token %}
+        <h1 class="text-2xl font-semibold text-center mb-6">
+            Escala – Sala de Parto
+        </h1>
 
-    {{ form.as_p }}
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
 
-    <button type="submit">Entrar</button>
-</form>
+            {% if form.errors %}
+                <div class="bg-red-100 text-red-700 p-3 rounded">
+                    Usuário ou senha inválidos.
+                </div>
+            {% endif %}
 
-</body>
-</html>
+            <div>
+                <label class="block text-sm font-medium mb-1">Usuário</label>
+                <input
+                    type="text"
+                    name="username"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+                    required
+                >
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1">Senha</label>
+                <input
+                    type="password"
+                    name="password"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+                    required
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+            >
+                Entrar
+            </button>
+        </form>
+
+        <p class="text-sm text-center text-slate-500 mt-6">
+            Sistema de Escalas – Residência de Enfermagem
+        </p>
+    </div>
+</div>
+{% endblock %}
+
