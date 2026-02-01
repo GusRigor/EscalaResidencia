@@ -3,78 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token }}">
-    <title>{% block title %}Escala Sala de Parto{% endblock %}</title>
+    <title>{% block title %}Escala — Sala de Parto{% endblock %}</title>
+
+    <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- CSRF + erros HTMX -->
     <script>
-    document.body.addEventListener('htmx:responseError', function (evt) {
-        if (evt.detail.xhr.status === 409) {
-            alert('Seu tempo de reserva expirou. Recarregue a página.');
-        }
-    document.body.addEventListener('htmx:configRequest', function (event) {
-        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        event.detail.headers['X-CSRFToken'] = token
-    });
+        document.body.addEventListener('htmx:responseError', function (evt) {
+            if (evt.detail.xhr.status === 409) {
+                alert('Seu tempo de reserva expirou. Recarregue a página.');
+            }
+        });
+
+        document.body.addEventListener('htmx:configRequest', function (event) {
+            const token = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute('content');
+
+            event.detail.headers['X-CSRFToken'] = token;
+        });
     </script>
-
-    <style>
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont;
-            margin: 40px;
-            background: #f6f7f8;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            background: #fff;
-        }
-
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-
-        th {
-            background: #f0f0f0;
-        }
-
-        .msg-success { color: green; }
-        .msg-error { color: red; }
-
-        .btn {
-            padding: 6px 10px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-danger { background: #c0392b; color: white; }
-        .btn-primary { background: #2980b9; color: white; }
-    </style>
 </head>
-<body>
 
-<h1>📅 Escala — Sala de Parto</h1>
+<body class="bg-slate-100 min-h-screen text-slate-800">
 
-<p>
-    Usuário: <strong>{{ request.user.username }}</strong>
-    ({{ request.user.role }})
-    <form method="post" action="{% url 'logout' %}">
-    {% csrf_token %}
-    <button class="btn">Sair</button>
-</form>
-</p>
+<!-- Header -->
+<header class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 
-{% if messages %}
-    {% for message in messages %}
-        <p class="msg-{{ message.tags }}">{{ message }}</p>
-    {% endfor %}
-{% endif %}
+        <h1 class="text-xl font-semibold flex items-center gap-2">
+            <a href="{% url 'home' %}">
+                📅 <span>Escala — Sala de Parto</span>
+            </a>
+        </h1>
 
-<hr>
+        {% if request.user.username %}
+        <div class="flex items-center gap-4 text-sm">
+            <span class="text-slate-600">
+                Usuário:
+                <strong class="text-slate-800">{{ request.user.username }}</strong>
+                <span class="ml-1 px-2 py-0.5 rounded bg-slate-200 text-xs uppercase">
+                    {{ request.user.role }}
+                </span>
+            </span>
+        
 
-{% block content %}{% endblock %}
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button
+                    type="submit"
+                    class="text-red-600 hover:text-red-700 font-medium"
+                >
+                    Sair
+                </button>
+            </form>
+        </div>
+        {% endif %}
 
+
+    </div>
+</header>
+
+<!-- Conteúdo -->
+<main class="max-w-7xl mx-auto px-4 py-6">
+
+    {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+                <div class="
+                    px-4 py-3 rounded
+                    {% if message.tags == 'success' %}
+                        bg-green-100 text-green-700
+                    {% elif message.tags == 'error' %}
+                        bg-red-100 text-red-700
+                    {% else %}
+                        bg-slate-100 text-slate-700
+                    {% endif %}
+                ">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Heartbeat do token -->
 {% if request.user.is_authenticated and request.user.role != 'CONVIDADO' %}
 <div
     hx-get="{% url 'heartbeat_token' %}"

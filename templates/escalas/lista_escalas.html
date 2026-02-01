@@ -2,46 +2,94 @@
 
 {% block content %}
 
-<h2>Reservar escala</h2>
-<p>
-    <a href="{% url 'home' %}">➡️ Voltar para calendário</a>
-</p>
+<div class="max-w-5xl mx-auto space-y-8">
 
-{% if request.user.role != 'CONVIDADO' %}
-<form
-    hx-post="{% url 'reservar_escala' %}"
-    hx-target="#tabela-escalas"
-    hx-swap="innerHTML"
->
-    {% csrf_token %}
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 class="text-2xl font-bold text-slate-800">
+            Reservar escala
+        </h2>
 
-    <input
-    type="date"
-    name="data"
-    required
-    min="{{ today|date:'Y-m-d' }}"
->
+        <div class="flex gap-4 text-sm">
+            <a href="{% url 'password_change' %}">
+                <span class="text-xl font-bold text-slate-800">
+                    🔐 Trocar senha
+                </span>
+            </a>
+            <a href="{% url 'home' %}">
+                <span class="text-xl font-bold text-slate-800">
+                    ⬅️ Voltar para calendário
+                </span>
+            </a>
+        </div>
+    </div>
 
-    <select name="turno_id" required>
-        {% for turno in turnos %}
-            <option value="{{ turno.id }}">
-                {{ turno.nome }}
-            </option>
-        {% endfor %}
-    </select>
+    {% if request.user.role != 'CONVIDADO' %}
+    <!-- Card de reserva -->
+    <div class="bg-white rounded-xl shadow p-6">
 
-    <button class="btn btn-primary">
-        Reservar
-    </button>
-</form>
-{% endif %}
+        <form
+            hx-post="{% url 'reservar_escala' %}"
+            hx-target="#tabela-escalas"
+            hx-swap="innerHTML"
+            class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
+        >
+            {% csrf_token %}
 
-<hr>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Data
+                </label>
+                <input
+                    type="date"
+                    name="data"
+                    required
+                    min="{{ today|date:'Y-m-d' }}"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+            </div>
 
-<h2>Escalas</h2>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Turno
+                </label>
+                <select
+                    name="turno_id"
+                    required
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    {% for turno in turnos %}
+                        <option value="{{ turno.id }}">
+                            {{ turno.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-<div id="tabela-escalas">
-    {% include 'escalas/_tabela_escalas.html' %}
+            <div>
+                <button
+                    type="submit"
+                    class="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-white font-medium hover:bg-blue-700 transition"
+                >
+                    📌 Reservar
+                </button>
+            </div>
+
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Tabela -->
+    <div class="space-y-4">
+        <h2 class="text-xl font-semibold text-slate-800">
+            Escalas
+        </h2>
+
+        <div id="tabela-escalas">
+            {% include 'escalas/_tabela_escalas.html' %}
+        </div>
+    </div>
+
 </div>
 
 {% endblock %}

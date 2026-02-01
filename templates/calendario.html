@@ -6,46 +6,80 @@
 
 {% block content %}
 
-<h2>📆 {{ hoje|date:"F Y" }}</h2>
+<div class="max-w-6xl mx-auto space-y-6">
 
-<table>
-    <thead>
-        <tr>
-            <th>Seg</th>
-            <th>Ter</th>
-            <th>Qua</th>
-            <th>Qui</th>
-            <th>Sex</th>
-            <th>Sáb</th>
-            <th>Dom</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for semana in dias_mes %}
-        <tr>
-            {% for dia in semana %}
-            <td style="vertical-align: top; {% if dia == hoje %}background:#eef;{% endif %}">
-                <strong>{{ dia.day }}</strong>
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-slate-800">
+            📆 {{ hoje|date:"F Y" }}
+        </h2>
 
-                {% for escala in mapa|get_item:dia %}
-                    <div style="font-size: 0.85em; margin-top:4px;">
-                        <b>{{ escala.turno.nome }}</b><br>
-                        {{ escala.usuario.username }}
-                    </div>
-                {% empty %}
-                    <div style="font-size: 0.8em; color:#999;">
-                        —
-                    </div>
+        <a
+            href="{% url 'lista_escalas' %}"
+        >
+        <span class="text-xl font-bold text-slate-800">
+            ➡️ Ir para reservas
+        </span>
+        </a>
+    </div>
+
+    <!-- Calendário -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="w-full table-fixed border-collapse">
+
+            <thead class="bg-slate-200">
+                <tr>
+                    <th class="p-3 text-center text-sm font-semibold text-slate-700">Seg</th>
+                    <th class="p-3 text-center text-sm font-semibold text-slate-700">Ter</th>
+                    <th class="p-3 text-center text-sm font-semibold text-slate-700">Qua</th>
+                    <th class="p-3 text-center text-sm font-semibold text-slate-700">Qui</th>
+                    <th class="p-3 text-center text-sm font-semibold text-slate-700">Sex</th>
+                    <th class="p-3 text-center text-sm font-semibold text-slate-700">Sáb</th>
+                    <th class="p-3 text-center text-sm font-semibold text-slate-700">Dom</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for semana in dias_mes %}
+                <tr class="border-t">
+                    {% for dia in semana %}
+                    <td class="align-top p-2 border-t border-slate-200
+                        {% if dia == hoje %} bg-blue-50 {% else %} bg-white {% endif %}">
+                        
+                        <!-- Dia -->
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-semibold text-slate-700">
+                                {{ dia.day }}
+                            </span>
+                        </div>
+
+                        <!-- Escalas -->
+                        <div class="space-y-1">
+                            {% for escala in mapa|get_item:dia %}
+                                <div class="rounded-md bg-slate-50 px-2 py-1 text-xs">
+                                    <div class="font-semibold text-slate-700">
+                                        {{ escala.turno.nome }}
+                                    </div>
+                                    <div class="text-slate-500">
+                                        {{ escala.usuario.username }}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="text-xs text-slate-400 italic">
+                                    —
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                    </td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            </tbody>
 
-<p>
-    <a href="{% url 'lista_escalas' %}">➡️ Ir para reservas</a>
-</p>
+        </table>
+    </div>
+
+</div>
 
 {% endblock %}
